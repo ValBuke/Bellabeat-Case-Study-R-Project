@@ -1,0 +1,210 @@
+---
+title: "FitBit Fitness Tracker"
+author: "Val"
+date: "2024-05-24"
+output: html_document
+---
+
+# Introduction and background #
+Bellabeat, a high-tech manufacturer of health-focused products for women. Bellabeat is a successful small company, but they have the potential to become a larger player in the global smart device market. Urška Sršen, cofounder and Chief Creative Officer of Bellabeat, believes that analyzing smart device fitness data could help unlock new growth opportunities for the company
+
+# Research Questions #
+What are some trends in smart device usage?
+How could these trends apply to Bellabeat customers?
+How could these trends help influence Bellabeat marketing strategy?
+
+# Objective #
+Identify potential opportunities for growth and recommendations for the Bellabeat marketing strategy improvement based on trends in smart device usage.
+
+# Load Packages#
+```{r}
+## Install and load common packages and libraries ##
+library(tidyverse)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(readr)
+```
+
+# Import Datasets #
+```{r}
+## Upload the  CSV files to R ##
+activity_data <- read_csv("C:/Users/Valery/Desktop/R NOTES/mturkfitbit_export_4.12.16-5.12.16/Fitabase Data 4.12.16-5.12.16/dailyActivity_merged.csv")
+View(activity_data)
+calories_data <- read_csv("C:/Users/Valery/Desktop/R NOTES/mturkfitbit_export_4.12.16-5.12.16/Fitabase Data 4.12.16-5.12.16/dailyCalories_merged.csv")
+View(calories_data)
+intensities_data <- read_csv("C:/Users/Valery/Desktop/R NOTES/mturkfitbit_export_4.12.16-5.12.16/Fitabase Data 4.12.16-5.12.16/dailyIntensities_merged.csv")
+View(intensities_data)
+sleep_data <- read_csv("C:/Users/Valery/Desktop/R NOTES/mturkfitbit_export_4.12.16-5.12.16/Fitabase Data 4.12.16-5.12.16/sleepDay_merged.csv")
+View(sleep_data)
+weight_data <- read_csv("C:/Users/Valery/Desktop/R NOTES/mturkfitbit_export_4.12.16-5.12.16/Fitabase Data 4.12.16-5.12.16/weightLogInfo_merged.csv")
+View(weight_data)
+hourlyIntensities_data <- read_csv("C:/Users/Valery/Desktop/R NOTES/mturkfitbit_export_4.12.16-5.12.16/Fitabase Data 4.12.16-5.12.16/hourlyIntensities_merged.csv")
+View(hourlyIntensities_data)
+hourlycalories_data <- read_csv("C:/Users/Valery/Desktop/R NOTES/mturkfitbit_export_4.12.16-5.12.16/Fitabase Data 4.12.16-5.12.16/hourlyCalories_merged.csv")
+View(hourlycalories_data)
+```
+# Explore a few key tables #
+```{r}
+## Take a look at the activity_data ##
+head(activity_data)
+```
+```{r}
+# Identify all the columns in the activity_data.
+colnames(activity_data)
+```
+```{r}
+## Take a look at the sleep_data ##
+head(sleep_data)
+```
+```{r}
+# Identify all the columns in the sleep_data.
+
+colnames(sleep_data)
+```
+```{r}
+# Take a look at the intensities_data.
+head(intensities_data)
+```
+```{r}
+# Identify all the columns in the intensities_data.
+colnames(intensities_data)
+```
+```{r}
+# Take a look at the calories_data.
+head(calories_data)
+```
+
+```{r}
+# Identify all the columns in the calories_data.
+colnames(calories_data)
+```
+```{r}
+# Take a look at the weight_data.
+head(weight_data)
+```
+```{r}
+# Identify all the columns in the weight_data.
+colnames(weight_data)
+```
+# Format data #
+```{r}
+# hourlyIntensities_data
+hourlyIntensities_data$ActivityHour=as.POSIXct(hourlyIntensities_data$ActivityHour, format="%m/%d/%Y %I:%M:%S %p", tz=Sys.timezone())
+hourlyIntensities_data$time <- format(hourlyIntensities_data$ActivityHour, format = "%H:%M:%S")
+hourlyIntensities_data$date <- format(hourlyIntensities_data$ActivityHour, format = "%m/%d/%y")
+# calories
+hourlycalories_data$ActivityHour=as.POSIXct(hourlycalories_data$ActivityHour, format="%m/%d/%Y %I:%M:%S %p", tz=Sys.timezone())
+hourlycalories_data$time <- format(hourlycalories_data$ActivityHour, format = "%H:%M:%S")
+hourlycalories_data$date <- format(hourlycalories_data$ActivityHour, format = "%m/%d/%y")
+# activity
+activity_data$ActivityDate=as.POSIXct(activity_data$ActivityDate, format="%m/%d/%Y", tz=Sys.timezone())
+activity_data$date <- format(activity_data$ActivityDate, format = "%m/%d/%y")
+# sleep
+sleep_data$SleepDay=as.POSIXct(sleep_data$SleepDay, format="%m/%d/%Y %I:%M:%S %p", tz=Sys.timezone())
+sleep_data$date <- format(sleep_data$SleepDay, format = "%m/%d/%y")
+```
+
+# Explore and summarize data #
+```{r}
+## Understanding some summary statistics ##
+# How many unique participants are there in each dataframe? 
+#It looks like there may be more participants in the daily activity dataset than the sleep dataset.
+
+n_distinct(activity_data$Id)
+n_distinct(sleep_data$Id)
+n_distinct(calories_data$Id)
+n_distinct(intensities_data$Id)
+n_distinct(weight_data$Id)
+```
+The activity,calories,and intensity dataset have 33 participants each.Weight data has the least number of respondents (n=8).Sleep data has 24 participants.
+
+```{r}
+## How many observations are there in each dataframe? ##
+nrow(activity_data)
+nrow(sleep_data)
+nrow(calories_data)
+nrow(intensities_data)
+nrow(weight_data)
+```
+The activity,calories,and intensity dataset have 940 observations each.Weight data has the least number of observations (67).Sleep data has 413 observations.
+
+# What are some quick summary statistics we'd want to know about each data frame?
+```{r}
+## For the daily activity dataframe: ##
+activity_data %>%  
+  select(TotalSteps,
+         TotalDistance,
+         SedentaryMinutes) %>%
+  summary()
+```
+
+```{r}
+## For the sleep dataframe: ##
+sleep_data %>%  
+  select(TotalSleepRecords,
+         TotalMinutesAsleep,
+         TotalTimeInBed) %>%
+  summary()
+```
+## What does this tell us about how this sample of people's activities? ## 
+
+Results show that participants take 7638 steps daily, on average.This is lower than the recommended 10,000 steps a day to stay fit and healthy.
+Participants' average sleep time is approximately 8 hours.The ideal amount of sleeping hours for most adults is 7 to 9 hours per night.
+
+# Visualization #
+```{r}
+## Plot a few explorations ##
+ggplot(data=activity_data, aes(x=TotalSteps, y=SedentaryMinutes)) + geom_point()+ geom_smooth() + labs(title="Scatter graph of Steps taken in a day versus sedentary minutes")
+
+```
+## What's the relationship between steps taken in a day and sedentary minutes? ##
+There is a strong,negative relationship between steps taken in a day and sedentary minutes.People who take more steps have fewer sedentary minutes.
+## How could this help inform the customer segments that we can market to? ##
+Bellabeat users should walk more to reduce their sedentary time. Bellabeat app can recommend reducing sedentary time by taking more steps during the day.
+
+```{r}
+# What's the relationship between minutes asleep and time in bed? 
+# You might expect it to be almost completely linear - are there any unexpected trends?
+ggplot(data=sleep_data, aes(x=TotalMinutesAsleep, y=TotalTimeInBed)) + geom_point()+labs(title="Relationship between minutes asleep and time in bed")
+
+```
+The between minutes asleep and time in bed is linear except for a few outliers. 
+Yes,there are some unexpected trends.
+## What could these trends tell you about how to help market this product? Or areas where you might want to explore further? ##
+The time watch that connects to the Bellabeat app should be able to notify participants (those with abnormal sleep patterns) to go to sleep in order to to improve the trend.
+
+# Merge Data#
+```{r}
+## Merging these two datasets together ##
+combined_data <- merge(sleep_data, activity_data, by="Id")
+combined_data
+
+```
+```{r}
+## Take a look at how many participants are in this data set. ##
+n_distinct(combined_data$Id)
+```
+```{r}
+## Now you can explore some different relationships between activity and sleep as well. ##
+ggplot(data=combined_data, aes(x=TotalMinutesAsleep, y=TotalSteps)) + 
+  geom_point() + geom_smooth() + labs(title="Total Steps versus TotalMinutesAsleep")
+
+```
+
+### For example, do you think participants who sleep more also take more steps or fewer ### 
+###  steps per day? Is there a relationship at all? How could these answers help inform the marketing strategy of how you position this new product ### 
+
+There is no clear relationship between the two variables.
+However, it is expected that the more sleep one takes,the more active they will become.
+
+# Recommendation #
+
+Bellabeat should upgrade the time watch that connects to the Bellabeat app should so that it notifies participants to go to sleep on time in order to to improve their  sleep patterns.
+
+Findings showed that most participants' average steps per day was lower than the recommended 10,000 steps needed to stay fit and healthy. Bellabeat should encourage their customers to take at least 10,000 steps.
+
+Bellabeat app can recommend reducing sedentary time by taking more steps during the day.
+
+
